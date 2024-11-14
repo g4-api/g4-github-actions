@@ -14,7 +14,7 @@ This GitHub Action builds and publishes an executable .NET project, packaging it
 ```yaml
 steps:
   - name: Publish Executable Project
-    uses: g4-github-actions/action/publish-executable-action@v1
+    uses: g4-github-actions/src/publish-executable-action@v1
     with:
       build_version: '2023.10.22.1'
       project_name: 'G4.ManifestValidator'
