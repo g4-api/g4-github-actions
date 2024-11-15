@@ -41,7 +41,7 @@ runs:
       shell: pwsh
       run: |
         $projectFile = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
-        $publishDir  = "${{ env.binariesDirectory }}"
+        $publishDir  = "${{ env.binariesDirectory }}/publish"
         msbuild $projectFile /t:Publish /p:Configuration=Release /p:PublishDir=$publishDir
 
     - name: Create Build Artifact
@@ -55,7 +55,7 @@ runs:
 
         New-Item -Path $artifactDir -ItemType Directory -Force
         Compress-Archive `
-            -Path "${{ env.binariesDirectory }}/publish/*" `
+            -Path ${{ env.binariesDirectory }}/publish/* `
             -DestinationPath $zipPath `
             -Force
 
