@@ -50,7 +50,7 @@ runs:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       shell: pwsh
       run: |
-        $artifactDir = ${{ env.artifactStagingDirectory }}
+        $artifactDir = "${{ env.artifactStagingDirectory }}"
         $zipPath     = "$artifactDir/${{ inputs.project_name }}.${{ inputs.build_version }}-win-linux-x64.zip"
 
         New-Item -Path $artifactDir -ItemType Directory -Force
