@@ -21,9 +21,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout repository
-      uses: src/checkout@v4
-
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v4
       with:
@@ -59,7 +56,8 @@ runs:
         New-Item -Path $artifactDir -ItemType Directory -Force
         Compress-Archive `
             -Path "${{ env.binariesDirectory }}/publish/*" `
-            -DestinationPath $zipPath
+            -DestinationPath $zipPath `
+            -Force
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
