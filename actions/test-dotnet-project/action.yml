@@ -1,0 +1,83 @@
+name: 'dotnet-unit-test'
+description: 'Run unit tests for a .NET project'
+
+inputs:
+  build_version:
+    description: 'Build version'
+    required: false
+    default: '0.0.0.0'
+
+  project_name:
+    description: 'Name of the project'
+    required: true
+
+  project_type:
+    description: 'Type of the project file (e.g., csproj or sln)'
+    required: true
+
+  dotnet_version:
+    description: 'Version of .NET SDK to use'
+    default: '8'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Unit Tests and Code Coverage
+      env:
+        artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+      shell: pwsh
+      run: |
+        $projectFile = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
+        dotnet test $projectFile -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" --collect:"Xplat Code Coverage"
+
+    - name: Publish Test Results
+      env:
+        artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        check_name: Unit Tests Results
+        files: |
+          ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+
+    - name: Upload Unit Tests Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+
+    - name: Copy Coverage File to Artifact Staging Directory
+      env:
+        artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+      shell: pwsh
+      run: |
+        # Get the most recently modified 'coverage.cobertura.xml' file from the './TestResults' directory and its subdirectories
+        $coverageFile = Get-ChildItem `
+            -Path '.' `
+            -Recurse -Filter 'coverage.cobertura.xml' `
+            -File | Sort-Object -Property LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
+
+        # Define the new file name and destination path
+        $newFileName = 'coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml'
+        $destinationPath = Join-Path -Path ${{ env.artifactStagingDirectory }} -ChildPath $newFileName
+
+        # Ensure the destination directory exists
+        if (-not (Test-Path -Path ${{ env.artifactStagingDirectory }})) {
+            New-Item -ItemType Directory -Path ${{ env.artifactStagingDirectory }}
+        }
+
+        # Copy the most recently modified 'coverage.cobertura.xml' file to the artifact staging directory with the new file name
+        Copy-Item -Path $coverageFile -Destination $destinationPath
+
+    - name: Upload Code Coverage Results
+      env:
+        artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-coverage
+        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+
+    - name: Publish Coverage Report
+      uses: actions/upload-coverage@v2
+      with:
+        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
