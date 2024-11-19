@@ -15,9 +15,15 @@ inputs:
     description: 'Type of the project file (e.g., csproj or sln)'
     required: true
 
-  dotnet_version:
-    description: 'Version of .NET SDK to use'
-    default: '8'
+  filter:
+    description: 'The filter to apply to the test run (e.g., TestCategory=Unit)'
+    required: false
+    default: ''
+  
+  test_settings:
+    description: 'The path to the test settings file'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -28,7 +34,13 @@ runs:
       shell: pwsh
       run: |
         $projectFile = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
-        dotnet test $projectFile -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" --collect:"Xplat Code Coverage"
+        $filterOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.filter }}")) { "--filter \"${{ inputs.filter }}\"" } else { "" }
+        $settingsOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.test_settings }}")) { "--settings \"${{ inputs.test_settings }}\"" } else { "" }
+        
+        dotnet test $projectFile `
+          -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" `
+          --collect:"Xplat Code Coverage" `
+          $filterOption $settingsOption
 
     - name: Publish Test Results
       env:
