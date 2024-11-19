@@ -45,7 +45,7 @@ runs:
             $settingsOption = ' --settings "${{ inputs.test_settings }}"'
         }
 
-        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.v${{ env.buildVersion }}.xml" --collect:"Xplat Code Coverage"
+        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" --collect:"Xplat Code Coverage"
 
     - name: Publish Test Results
       env:
