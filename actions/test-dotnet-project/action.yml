@@ -34,7 +34,7 @@ runs:
       shell: pwsh
       run: |
         $projectFile = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
-        $filterOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.filter }}")) { "--filter ${{ inputs.filter }}" } else { "" }
+        $filterOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.filter }}")) { "\"--filter ${{ inputs.filter }}"\" } else { "" }
         $settingsOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.test_settings }}")) { "--settings ${{ inputs.test_settings }}" } else { "" }
         
         dotnet test $projectFile `
