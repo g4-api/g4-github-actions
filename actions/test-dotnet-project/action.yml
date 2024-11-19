@@ -33,11 +33,19 @@ runs:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       shell: pwsh
       run: |
-        $projectFile = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
-        $filterOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.filter }}")) { " --filter \"${{ inputs.filter }}\"" } else { "" }
-        $settingsOption = if (![string]::IsNullOrWhiteSpace("${{ inputs.test_settings }}")) { " --settings ${{ inputs.test_settings }}" } else { "" }
+        $projectFile    = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
+        $filterOption   = [string]::Empty
+        $settingsOption = [string]::Empty
 
-        dotnet test $projectFile$filterOption$settingsOption -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.v${{ env.buildVersion }}.xml" --collect:"Xplat Code Coverage"
+        if(![string]::IsNullOrEmpty("${{ inputs.filter }}")) {
+            $filterOption = ' --filter "${{ inputs.filter }}"'
+        }
+
+        if(![string]::IsNullOrEmpty("${{ inputs.test_settings }}")) {
+            $settingsOption = ' --settings "${{ inputs.test_settings }}"'
+        }
+
+        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.v${{ env.buildVersion }}.xml" --collect:"Xplat Code Coverage"
 
     - name: Publish Test Results
       env:
