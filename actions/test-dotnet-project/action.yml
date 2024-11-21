@@ -42,11 +42,11 @@ runs:
         }
 
         if(![string]::IsNullOrEmpty("${{ inputs.test_settings }}")) {
-            $settingsOption = ' --settings "${{ inputs.test_settings }}"'
+            $settingsFile   = (Get-ChildItem -Path . -Filter "${{ inputs.test_settings }}" -Recurse).FullName
+            $settingsOption = (' --settings "' + $settingsFile + '"')
         }
 
         dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" --collect:"Xplat Code Coverage"
-
     - name: Publish Test Results
       env:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
