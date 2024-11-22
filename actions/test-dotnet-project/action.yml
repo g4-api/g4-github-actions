@@ -28,18 +28,30 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Get Working Directory
+      id: set-working-directory
+      shell: pwsh
+      run: |
+        $projectFileName  = "${{ inputs.project-name }}.${{ inputs.project-type }}"
+        $workingDirectory = [System.IO.Path]::GetDirectoryName($projectFile)
+        Write-Host "Working Directory: $workingDirectory"
+
+        $OutputString = "working-directory=$workingDirectory"
+        $OutputString | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
     - name: Unit Tests and Code Coverage
       env:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       shell: pwsh
+      working-directory: ${{ steps.set-working-directory.outputs.working-directory }}
       run: |
-        $projectFileName      = "G4.UnitTests.csproj"
+        $projectFileName      = "${{ inputs.project-name }}.${{ inputs.project-type }}"
         $projectFile          = (Get-ChildItem -Path . -Filter $projectFileName -Recurse).FullName
-        $runSettingsFileName  = "Default.runsettings"
+        $runSettingsFileName  = "${{ inputs.test-settings }}"
         $runSettingsFile      = (Get-ChildItem -Path . -Filter $runSettingsFileName -Recurse).FullName
         $testDirectory        = [System.IO.Path]::GetDirectoryName($projectFile)
-        $testFilterExpression = [string]::Empty
-        $testReportFile       = "TestOutput.xml"
+        $testFilterExpression = "${{ inputs.filter }}"
+        $testReportFile       = "${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml"
 
         Write-Host "Project File Name: $projectFileName"
         Write-Host "Project File: $projectFile"
