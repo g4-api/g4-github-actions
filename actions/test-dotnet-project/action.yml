@@ -33,6 +33,7 @@ runs:
       shell: pwsh
       run: |
         $projectFileName  = "${{ inputs.project-name }}.${{ inputs.project-type }}"
+        $projectFile      = (Get-ChildItem -Path . -Filter $projectFileName -Recurse).FullName
         $workingDirectory = [System.IO.Path]::GetDirectoryName($projectFile)
         Write-Host "Working Directory: $workingDirectory"
 
