@@ -2,16 +2,16 @@ name: 'dotnet-unit-test'
 description: 'Run unit tests for a .NET project'
 
 inputs:
-  build_version:
+  build-version:
     description: 'Build version'
     required: false
     default: '0.0.0.0'
 
-  project_name:
+  project-name:
     description: 'Name of the project'
     required: true
 
-  project_type:
+  project-type:
     description: 'Type of the project file (e.g., csproj or sln)'
     required: true
 
@@ -20,7 +20,7 @@ inputs:
     required: false
     default: ''
   
-  test_settings:
+  test-settings:
     description: 'The path to the test settings file'
     required: false
     default: ''
@@ -33,7 +33,7 @@ runs:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       shell: pwsh
       run: |
-        $projectFile    = (Get-ChildItem -Path . -Filter "${{ inputs.project_name }}.${{ inputs.project_type }}" -Recurse).FullName
+        $projectFile    = (Get-ChildItem -Path . -Filter "${{ inputs.project-name }}.${{ inputs.project-type }}" -Recurse).FullName
         $filterOption   = [string]::Empty
         $settingsOption = [string]::Empty
 
@@ -41,12 +41,12 @@ runs:
             $filterOption = ' --filter "${{ inputs.filter }}"'
         }
 
-        if(![string]::IsNullOrEmpty("${{ inputs.test_settings }}")) {
-            $settingsFile   = (Get-ChildItem -Path . -Filter "${{ inputs.test_settings }}" -Recurse).FullName
-            $settingsOption = (' --settings "' + $settingsFile + '"')
+        if(![string]::IsNullOrEmpty("${{ inputs.test-settings }}")) {
+            $settingsOption = ' --settings "${{ inputs.test-settings }}"'
         }
 
-        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml" --collect:"Xplat Code Coverage"
+        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml" --collect:"Xplat Code Coverage"
+
     - name: Publish Test Results
       env:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
@@ -55,13 +55,13 @@ runs:
       with:
         check_name: Unit Tests Results
         files: |
-          ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+          ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: Upload Unit Tests Results
       uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+        path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: Copy Coverage File to Artifact Staging Directory
       env:
@@ -75,7 +75,7 @@ runs:
             -File | Sort-Object -Property LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 
         # Define the new file name and destination path
-        $newFileName = 'coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml'
+        $newFileName = 'coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.xml'
         $destinationPath = Join-Path -Path ${{ env.artifactStagingDirectory }} -ChildPath $newFileName
 
         # Ensure the destination directory exists
@@ -92,14 +92,14 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: test-coverage
-        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml
+        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: New Code Coverage Summary
       id: new-coverage-file
       shell: pwsh
       run: |
-        $xmlSource        = "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.xml"
-        $outputFile       = "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.md"
+        $xmlSource        = "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.xml"
+        $outputFile       = "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.md"
         $showBadges       = $true
         $showPackages     = $true
         $showClassSummary = $false
@@ -238,14 +238,14 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: unit-tests-coverage-summary
-        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.md
+        path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.md
 
     - name: Collect Job Summary
       working-directory: ${{ env.artifactStagingDirectory }}  
       shell: pwsh
       run: |
         # Read the content of the coverage report file
-        $content = Get-Content -Path "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project_name }}.${{ inputs.build_version }}.md"
+        $content = Get-Content -Path "${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.md"
 
         # Append the content to the GitHub Actions job summary to display it in the workflow run details
         $content | Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding utf8
