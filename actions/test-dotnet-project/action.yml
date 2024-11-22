@@ -33,19 +33,39 @@ runs:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       shell: pwsh
       run: |
-        $projectFile    = (Get-ChildItem -Path . -Filter "${{ inputs.project-name }}.${{ inputs.project-type }}" -Recurse).FullName
-        $filterOption   = [string]::Empty
-        $settingsOption = [string]::Empty
+        $projectFileName      = "G4.UnitTests.csproj"
+        $projectFile          = (Get-ChildItem -Path . -Filter $projectFileName -Recurse).FullName
+        $runSettingsFileName  = "Default.runsettings"
+        $runSettingsFile      = (Get-ChildItem -Path . -Filter $runSettingsFileName -Recurse).FullName
+        $testDirectory        = [System.IO.Path]::GetDirectoryName($projectFile)
+        $testFilterExpression = [string]::Empty
+        $testReportFile       = "TestOutput.xml"
 
-        if(![string]::IsNullOrEmpty("${{ inputs.filter }}")) {
-            $filterOption = ' --filter "${{ inputs.filter }}"'
+        Write-Host "Project File Name: $projectFileName"
+        Write-Host "Project File: $projectFile"
+        Write-Host "Run Settings File Name: $runSettingsFileName"
+        Write-Host "Run Settings File: $runSettingsFile"
+        Write-Host "Test Directory: $testDirectory"
+        Write-Host "Initial Test Filter Expression: $testFilterExpression"
+        Write-Host "Test Report File: $testReportFile"
+
+        if(![string]::IsNullOrEmpty($testsFilterExpression)) {
+            $testFilterExpression = (' --filter "' + $testsFilterExpression + '"')
         }
 
-        if(![string]::IsNullOrEmpty("${{ inputs.test-settings }}")) {
-            $settingsOption = ' --settings "${{ inputs.test-settings }}"'
+        if(![string]::IsNullOrEmpty($runSettingsFile)) {
+            $runSettingsFile = (' --settings "' + $runSettingsFile + '"')
         }
 
-        dotnet test "$($projectFile)$($filterOption)$($settingsOption)" -l:"trx;LogFileName=${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml" --collect:"Xplat Code Coverage"
+        Set-Location $testDirectory
+        Write-Host "Changed directory to: $testDirectory"
+
+        Write-Host "Executing dotnet test command with the following parameters:"
+        Write-Host "Test Filter Expression: $testFilterExpression"
+        Write-Host "Run Settings File Argument: $runSettingsFile"
+        Write-Host "Test Report File: $testReportFile"
+
+        dotnet test ('"' + "$($testFilterExpression)$($runSettingsFile)" + '"') -l:('"trx;LogFileName=' + $testReportFile + '"') --collect:'"Xplat Code Coverage"'
 
     - name: Publish Test Results
       env:
