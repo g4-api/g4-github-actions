@@ -92,7 +92,7 @@ runs:
             $argumentsCollection += ('--filter "' + $testFilterExpression + '"')
         }
         
-        if(![string]::IsNullOrEmpty($runSettingsFile)) {
+        if(![string]::IsNullOrEmpty($runSettingsFileName)) {
             $argumentsCollection += ('--settings "' + $runSettingsFile + '"')
         }
         
