@@ -71,10 +71,7 @@ runs:
         Write-Host "Test Directory                : $testDirectory"
         Write-Host "Initial Test Filter Expression: $testFilterExpression"
         Write-Host "Test Report File              : $testReportFile"
-        
-        Set-Location $testDirectory
-        Write-Host "Changed directory to          : $testDirectory"
-        
+               
         Write-Host "Executing dotnet test command with the following parameters:"
         Write-Host "Test Filter Expression        : $testFilterExpression"
         Write-Host "Run Settings File Argument    : $runSettingsFile"
@@ -102,6 +99,9 @@ runs:
         
         $arguments = $argumentsCollection -join " "
         
+        Set-Location $testDirectory
+        Write-Host "Changed directory to : $testDirectory"
+
         Start-Process -FilePath "dotnet" -ArgumentList $arguments -NoNewWindow -Wait
   
     - name: Publish Test Results
