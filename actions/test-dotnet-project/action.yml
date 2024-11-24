@@ -54,32 +54,45 @@ runs:
         $testFilterExpression = "${{ inputs.filter }}"
         $testReportFile       = "${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml"
 
-        Write-Host "Project File Name: $projectFileName"
-        Write-Host "Project File: $projectFile"
-        Write-Host "Run Settings File Name: $runSettingsFileName"
-        Write-Host "Run Settings File: $runSettingsFile"
-        Write-Host "Test Directory: $testDirectory"
+        Write-Host "Project File Name             : $projectFileName"
+        Write-Host "Project File                  : $projectFile"
+        Write-Host "Run Settings File Name        : $runSettingsFileName"
+        Write-Host "Run Settings File             : $runSettingsFile"
+        Write-Host "Test Directory                : $testDirectory"
         Write-Host "Initial Test Filter Expression: $testFilterExpression"
-        Write-Host "Test Report File: $testReportFile"
-
-        if(![string]::IsNullOrEmpty($testsFilterExpression)) {
-            $testFilterExpression = (' --filter "' + $testsFilterExpression + '"')
-        }
-
-        if(![string]::IsNullOrEmpty($runSettingsFile)) {
-            $runSettingsFile = (' --settings "' + $runSettingsFile + '"')
-        }
-
+        Write-Host "Test Report File              : $testReportFile"
+        
         Set-Location $testDirectory
-        Write-Host "Changed directory to: $testDirectory"
-
+        Write-Host "Changed directory to          : $testDirectory"
+        
         Write-Host "Executing dotnet test command with the following parameters:"
-        Write-Host "Test Filter Expression: $testFilterExpression"
-        Write-Host "Run Settings File Argument: $runSettingsFile"
-        Write-Host "Test Report File: $testReportFile"
-
-        dotnet test ('"' + "$($testFilterExpression)$($runSettingsFile)" + '"') -l:('"trx;LogFileName=' + $testReportFile + '"') --collect:'"Xplat Code Coverage"'
-
+        Write-Host "Test Filter Expression        : $testFilterExpression"
+        Write-Host "Run Settings File Argument    : $runSettingsFile"
+        Write-Host "Test Report File              : $testReportFile"
+        
+        $filterToken         = $testFilterExpression
+        $settingsToken       = $runSettingsFile
+        $loggerToken         = ('"trx;LogFileName=' + $testReportFile + '"')
+        $collectToken        = '"Xplat Code Coverage"'
+        $argumentsCollection = @(
+            "test"
+        )
+        
+        if(![string]::IsNullOrEmpty($testFilterExpression)) {
+            $argumentsCollection += ('--filter "' + $testFilterExpression + '"')
+        }
+        
+        if(![string]::IsNullOrEmpty($runSettingsFile)) {
+            $argumentsCollection += ('--settings "' + $runSettingsFile + '"')
+        }
+        
+        $argumentsCollection += "-l:" + ('"trx;LogFileName=' + $testReportFile + '"')
+        $argumentsCollection += "--collect:" + '"Xplat Code Coverage"'
+        
+        $arguments = $argumentsCollection -join " "
+        
+        Start-Process -FilePath "dotnet" -ArgumentList $arguments -NoNewWindow -Wait
+  
     - name: Publish Test Results
       env:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
