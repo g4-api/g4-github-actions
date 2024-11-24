@@ -86,6 +86,7 @@ runs:
             $argumentsCollection += ('--settings "' + $runSettingsFile + '"')
         }
         
+        $argumentsCollection += "--no-build"
         $argumentsCollection += "-l:" + ('"trx;LogFileName=' + $testReportFile + '"')
         $argumentsCollection += "--collect:" + '"Xplat Code Coverage"'
         
