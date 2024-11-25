@@ -113,11 +113,11 @@ runs:
 
         Start-Process -FilePath "dotnet" -ArgumentList $arguments -NoNewWindow -Wait
   
-    - name: Upload Unit Tests Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.results-artifact-name }}
-        path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
+    # - name: Upload Unit Tests Results
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: ${{ inputs.results-artifact-name }}
+    #     path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: Copy Coverage File to Artifact Staging Directory
       env:
