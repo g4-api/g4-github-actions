@@ -30,6 +30,16 @@ inputs:
     required: false
     default: ''
 
+  results-artifact-name:
+    description: 'The name of the artifact to store the test results'
+    required: false
+    default: 'test-results'
+
+  coverage-artifact-name:
+    description: 'The name of the artifact to store the code coverage results'
+    required: false
+    default: 'test-coverage'
+
 runs:
   using: 'composite'
   steps:
@@ -103,20 +113,10 @@ runs:
 
         Start-Process -FilePath "dotnet" -ArgumentList $arguments -NoNewWindow -Wait
   
-    # - name: Publish Test Results
-    #   env:
-    #     artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
-    #   uses: EnricoMi/publish-unit-test-result-action@v2
-    #   if: always()
-    #   with:
-    #     check_name: Unit Tests Results
-    #     files: |
-    #       ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
-
     - name: Upload Unit Tests Results
       uses: actions/upload-artifact@v4
       with:
-        name: test-results
+        name: ${{ inputs.results-artifact-name }}
         path: ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: Copy Coverage File to Artifact Staging Directory
@@ -147,7 +147,7 @@ runs:
         artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
       uses: actions/upload-artifact@v4
       with:
-        name: test-coverage
+        name: ${{ inputs.coverage-artifact-name }}
         path: ${{ env.artifactStagingDirectory }}/coverage.cobertura.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: New Code Coverage Summary
