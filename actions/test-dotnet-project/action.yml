@@ -93,7 +93,6 @@ runs:
             $argumentsCollection += ('--settings "' + $runSettingsFile + '"')
         }
         
-        $argumentsCollection += "--no-build"
         $argumentsCollection += "-l:" + ('"trx;LogFileName=' + $testReportFile + '"')
         $argumentsCollection += "--collect:" + '"Xplat Code Coverage"'
         
@@ -104,15 +103,15 @@ runs:
 
         Start-Process -FilePath "dotnet" -ArgumentList $arguments -NoNewWindow -Wait
   
-    - name: Publish Test Results
-      env:
-        artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
-      with:
-        check_name: Unit Tests Results
-        files: |
-          ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
+    # - name: Publish Test Results
+    #   env:
+    #     artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+    #   uses: EnricoMi/publish-unit-test-result-action@v2
+    #   if: always()
+    #   with:
+    #     check_name: Unit Tests Results
+    #     files: |
+    #       ${{ env.artifactStagingDirectory }}/TestOutput.${{ inputs.project-name }}.${{ inputs.build-version }}.xml
 
     - name: Upload Unit Tests Results
       uses: actions/upload-artifact@v4
